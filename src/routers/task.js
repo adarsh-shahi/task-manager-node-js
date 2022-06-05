@@ -14,10 +14,6 @@ router.post('/tasks', async (req, res) => {
 	}
 });
 
-
-
-
-
 router.get('/tasks', async (req, res) => {
 	try {
 		const tasks = await Task.find({});
@@ -55,11 +51,20 @@ router.patch('/tasks/:id', async (req, res) => {
 	if (!isValid) return res.status(400).send({ error: 'invalid updates' });
 
 	try {
-		const updatedTask = await Task.findByIdAndUpdate(_id, task, {
-			new: true,
-			runValidators: true,
-		});
-		if (updatedTask) res.send(updatedTask);
+        const getTask = await Task.findById(_id)
+
+        updates.forEach((update) => {
+            getTask[update] = task[update]
+        })
+
+        getTask.save()
+
+		// const updatedTask = await Task.findByIdAndUpdate(_id, task, {
+		// 	new: true,
+		// 	runValidators: true,
+		// });
+
+		if (getTask) res.send(getTask);
 		else res.status(400).send();
 	} catch (e) {
 		res.status(400).send(e);

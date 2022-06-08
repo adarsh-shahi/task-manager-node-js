@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
+const Task = require('./task')
 
 const userSchema = new mongoose.Schema({
 	name: {
@@ -44,6 +45,9 @@ const userSchema = new mongoose.Schema({
 			required: true
 		}
 	}]
+	
+}, {
+	timestamps: true   // creates createdAt and upatedAt fields in DB
 });
 
 userSchema.virtual('tasks',{
@@ -97,6 +101,13 @@ userSchema.pre('save', async function (next) {
 	}
 	next(); //this tells we are done with the functionalities we wanted to added before saving
 });
+
+// delete user tasks when user is deleted
+userSchema.pre('remove', async function (next){
+	await Task.deleteMany({owner: this._id})
+	next()
+})
+
 
 // / the 'Task' parameter we have passed
 // mongoose takes it in lowercase and pluralises it for Collection name in db

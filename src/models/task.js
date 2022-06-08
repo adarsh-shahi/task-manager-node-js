@@ -1,7 +1,7 @@
 
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
+const taskSchema = new mongoose.Schema({
     description: {
         type: String,
         required: true,
@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema({
         required: true,
         ref: 'User'
     } 
+}, {
+	timestamps: true   // creates createdAt and upatedAt fields in DB
 })
 
 
@@ -24,6 +26,6 @@ const userSchema = new mongoose.Schema({
 //     next()
 // })
 
-const Task = mongoose.model('Task', userSchema)
+const Task = mongoose.model('Task', taskSchema)
 
 module.exports = Task

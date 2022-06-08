@@ -8,7 +8,7 @@ router.post('/tasks', authMiddleware, async (req, res) => {
 	// const task = new Task(req.body);
 	const task = new Task({
 		description: req.body.description,
-		completed: req.body.compelted,
+		completed: req.body.completed,
 		owner: req.user._id,
 	});
 
@@ -19,10 +19,26 @@ router.post('/tasks', authMiddleware, async (req, res) => {
 		res.status(400).send(e);
 	}
 });
-
+// tasks?completed=false
+// tasks?limit=5&skip=2
+// tasks?sortBy=createdAt:desc
 router.get('/tasks', authMiddleware, async (req, res) => {
+	const search = {}
+	const sort = {}
+
+	if(req.query.sortBy){
+		const parts  = req.query.sortBy.split(':')
+		sort[parts[0]] = parts[1] === 'asec' ? 1 : -1   // 1 for ascending and -1 for descend
+	}
+
+	if(req.query.completed){
+		req.query.completed = req.query.completed === 'true'
+		search.completed = req.query.completed
+	}
+	search.owner = req.user._id
+
 	try {
-		const tasks = await Task.find({ owner: req.user._id });
+		const tasks = await Task.find(search).limit(req.query.limit).skip(req.query.skip).sort(sort); 
 		if (tasks) res.send(tasks);
 		else res.status(404).send();
 	} catch (e) {

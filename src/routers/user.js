@@ -129,9 +129,10 @@ router.delete('/users/me',authMiddleware, async (req, res) => {
 		// if(user) res.send(user)
 		// else res.status(404).send({error: 'cannot find user'})
 		await req.user.remove()
-		req.send(req.user)
+		res.send(req.user)
 	}
 	catch(e){
+		console.log('run this');
 		res.status(500).send(e)
 	}
 })

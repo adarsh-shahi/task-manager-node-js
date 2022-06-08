@@ -46,6 +46,23 @@ const userSchema = new mongoose.Schema({
 	}]
 });
 
+userSchema.virtual('tasks',{
+	ref: 'Task',
+	localField: '_id',
+	foreignField: 'owner'
+})
+
+
+
+// whenever JSON.stringiyfy is called for a instance this below function we run
+userSchema.methods.toJSON = function () {
+	const userObject = this.toObject()
+	delete userObject.password
+	delete userObject.tokens
+	return userObject
+}
+
+
 // methods are available to instances
 userSchema.methods.generateToken = async function ()  {
 	const token = jwt.sign({_id: this._id.toString()}, 'secretkey', {expiresIn: '7 days'})

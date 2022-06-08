@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -9,13 +10,19 @@ const userSchema = new mongoose.Schema({
     completed: {
         type: Boolean,
         default: false
-    }
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
+    } 
 })
 
-userSchema.pre('save', async function(next) {
-    console.log('task saving middleware');
-    next()
-})
+
+// userSchema.pre('save', async function(next) {
+//     console.log('task saving middleware');
+//     next()
+// })
 
 const Task = mongoose.model('Task', userSchema)
 

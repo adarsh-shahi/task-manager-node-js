@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/user');
-const authMiddleware = require('../middleware/auth')
+const authMiddleware = require('../middleware/auth');
 const router = new express.Router()
 
 
@@ -28,33 +28,59 @@ router.post('/users/login', async (req,res) => {
     }
 })
 
-router.get('/users', authMiddleware, async (req, res) => {
-	try {
-		const users = await User.find({});
-		res.send(users);
-	} catch (e) {
-		res.status(500).send();
+
+router.post('/users/logout', authMiddleware, async (req, res) => {
+	try{
+		req.user.tokens = req.user.tokens.filter((token) => {   // removing current token
+			return token.token !== req.token
+		})
+		await req.user.save()
+		res.send()
 	}
+	catch(e){
+		res.status(500).send()
+	}
+})
+
+router.post('/users/logout/all', authMiddleware, async (req, res) => { 
+	try{
+		req.user.tokens = []
+		await req.user.save()
+		res.send()
+	}
+	catch(e){
+		res.status(500).send()
+	}
+})
+
+router.get('/users/me', authMiddleware, async (req, res) => {
+
+	res.send(req.user)
+
+	// try {
+	// 	const users = await User.find({});
+	// 	res.send(users);
+	// } catch (e) {
+	// 	res.status(500).send();
+	// }
 });
 
-router.get('/users/:id', async (req, res) => {
-	const _id = req.params.id;
+// router.get('/users/:id', async (req, res) => {
+// 	const _id = req.params.id;
 
-	try {
-		const user = await User.findById(_id);
-		if (user) res.send(user);
-		else res.status(404).send();
-	} catch (e) {
-		res.status(500).send();
-	}
-});
+// 	try {
+// 		const user = await User.findById(_id);
+// 		if (user) res.send(user);
+// 		else res.status(404).send();
+// 	} catch (e) {
+// 		res.status(500).send();
+// 	}
+// });
 
-router.patch('/users/:id', async (req, res) => {
-	const _id = req.params.id;
-	const user = req.body;
+router.patch('/users/me',authMiddleware, async (req, res) => {
 
 	const allowed = ['name', 'email', 'password', 'age'];
-	const updates = Object.keys(user);
+	const updates = Object.keys(req.body);
 
 	const isValid = updates.every((update) => {
 		return allowed.includes(update);
@@ -64,10 +90,10 @@ router.patch('/users/:id', async (req, res) => {
 
 	try {
 
-        const getUser = await User.findById(_id)
+        const getUser = req.user
 
         updates.forEach((update) => {
-            getUser[update] = user[update]  // while accessing a property dynamically we cant use '.'
+            getUser[update] = req.body[update]  // while accessing a property dynamically we cant use '.'
         })
 
 
@@ -90,19 +116,20 @@ router.patch('/users/:id', async (req, res) => {
 
         */
 
-		if (getUser) res.send(getUser);
-		else res.status(404).send(); // user is not found in db but operation was succesfull
+		res.send(getUser);
+	
 	} catch (e) {
 		res.status(400).send(e); // validation error
 	}
 });
 
-router.delete('/users/:id', async (req, res) => {
-	const _id = req.params.id
+router.delete('/users/me',authMiddleware, async (req, res) => {
 	try{
-		const user = await User.findByIdAndDelete(_id)
-		if(user) res.send(user)
-		else res.status(404).send({error: 'cannot find user'})
+		// const user = await User.findByIdAndDelete(req.user._id)
+		// if(user) res.send(user)
+		// else res.status(404).send({error: 'cannot find user'})
+		await req.user.remove()
+		req.send(req.user)
 	}
 	catch(e){
 		res.status(500).send(e)

@@ -2,3 +2,4 @@
 .prettierrc
 mongodb.js
 /playground
+/config
